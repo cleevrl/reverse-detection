@@ -1,12 +1,11 @@
 import socket
-import pickle
 from PySide6.QtCore import QThread, Signal
 
 def vms_message(reversed):
 
     device_id = 0x01
     size_high = 0x00
-    size_low = 0x0A
+    size_low = 0x08
     op_code = 0x27
     control = 0x80
 
@@ -20,10 +19,9 @@ def vms_message(reversed):
     lrc_code = cal_lrc(body)
     
     message = header + body + [lrc_code, 0x03]
-    serialized = pickle.dumps(message)
-    print(serialized)
+    message = bytearray(message)
 
-    return serialized
+    return message
 
 def cal_lrc(msg):
 
