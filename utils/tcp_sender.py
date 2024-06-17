@@ -46,13 +46,8 @@ class TCPThread(QThread):
         self.port = 5000
 
         self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        try:
-            self.cl.connect((self.host, self.port))
-            self.connected = True
-        except:
-            print("TCP Connection Failed.")
-            self.connected = False
+        self.connect()
+
 
     def connect(self):
 
@@ -60,7 +55,8 @@ class TCPThread(QThread):
             self.cl.connect((self.host, self.port))
             self.connected = True
         except:
-            self.connected = False 
+            print("TCP Connection Failed.")
+            self.connected = False
     
     def run(self):
 
@@ -71,8 +67,8 @@ class TCPThread(QThread):
                 time.sleep(1)
             else:
                 print("Trying to connect TCP server. (Every 5 secs)")
-                self.connect()
                 time.sleep(5)
+                self.connect()
 
     def sendMessage(self, reversed):
 
