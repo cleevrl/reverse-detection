@@ -3,7 +3,6 @@ import numpy as np
 import time
 
 import multiprocessing
-from utils.dbict_serial import run_serial
 
 from datetime import datetime, timedelta
 import os
@@ -12,10 +11,13 @@ import os
 # url = "http://59.14.95.196:1188/cam"
 
 # 김제한우 앞 TBT 일반영상 http
-url = "http://admin:dongbuict0@59.14.95.196:6480/ISAPI/Streaming/channels/102/httpPreview"
+# url = "http://admin:dongbuict0@59.14.95.196:6480/ISAPI/Streaming/channels/102/httpPreview"
 
 # 김제한우 앞 TBT 일반영상 rtsp
-#url = "rtsp://admin:dongbuict0@59.14.95.196:55464/ISAPI/Streaing/channels/102/httpPreview"
+# url = "rtsp://admin:dongbuict0@59.14.95.196:55464/ISAPI/Streaing/channels/102/httpPreview"
+
+# 내부 네트워크 TBT 일반영상 http
+url = "http://admin:qwer1234@192.168.1.11:80/ISAPI/Streaming/channels/102/httpPreview"
 
 # uart 통신 확인으로 재부팅을 하는 경우 True 활성화
 is_watchdog = False
@@ -85,14 +87,5 @@ def run():
 
 if __name__ == "__main__":
 
-    if is_watchdog:
-        print("serial process is started for suspending reboot")
-        p = multiprocessing.Process(target=run_serial)
-        p.start()
-
     run()
     print("closed!")
-
-    if is_watchdog:
-        print("serial process is terminate")
-        p.terminate()

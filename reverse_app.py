@@ -148,7 +148,7 @@ class MainWindow(QWidget):
         self.serial_broker.start()
         self.tcp_client = TCPThread()
         self.tcp_client.start()
-        self.handler = EventHandler()
+        self.handler = EventHandler(self.tcp_client, self.config)
         self.handler.start()
 
         self.initUI()
