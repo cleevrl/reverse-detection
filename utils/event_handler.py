@@ -29,35 +29,41 @@ class EventHandler(QThread):
             str_data = str_data.partition("\n")[0]
             list_data = str_data.split(" ")
 
-            if not self.reversed:
+            if self.pre_frame == list_data[4]:
 
-                if self.pre_frame == list_data[4]:
-                    ...
-                else:
-                    self.pre_frame = list_data[4]
+                ...
 
-                    if list_data[9] < 0:
+            else:
+
+                if not len(list_data) == 12:
+                    print("!!!!!! len error")
+                    time.sleep(0.05)
+                    continue
+
+                self.pre_frame = list_data[4]
+                
+                if not self.reversed:
+
+                    if int(list_data[9]) < 0:
                         self.reverse_cnt = self.reverse_cnt + 1
 
-                if self.reverse_cnt == self.config.yaml_data['reverse_frame']:
-                    self.reverse_cnt = 0
-                    self.reversed = True
-                    self.tcp.sendMessage(True)
-                    play_sound()
+                    if self.reverse_cnt == self.config.yaml_data['reverse_frame']:
+                        print("Reverse Event")
+                        self.reverse_cnt = 0
+                        self.reversed = True
+                        self.tcp.sendMessage(True)
+                        play_sound()
             
-            else:
-                
-                if self.pre_frame == list_data[4]:
-                    ...
                 else:
-                    self.pre_frame = list_data[4]
 
-                    if list_data[9] == 0:
+                    if int(list_data[9]) == 0:
                         self.release_cnt = self.release_cnt + 1
 
-                if self.release_cnt == 20:
-                    self.release_cnt = 0
-                    self.reversed = False
-                    self.tcp.sendMessage(False)
+                    if self.release_cnt == 20:
+                        self.release_cnt = 0
+                        self.reversed = False
+                        self.tcp.sendMessage(False)
+
+                print(f"Reversed : {self.reversed} / rev_cnt : {self.reverse_cnt} / rel_cnt : {self.release_cnt}")
 
             time.sleep(0.05)
