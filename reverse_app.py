@@ -155,16 +155,17 @@ class TestWidget(QGroupBox):
 
 class MainWindow(QWidget):
 
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
 
+        self.app = app
         self.config = ConfigParser()
 
         self.serial_broker = SerialBroker()
         self.serial_broker.start()
         self.tcp_client = TCPThread()
         self.tcp_client.start()
-        self.handler = EventHandler(self.tcp_client, self.config)
+        self.handler = EventHandler(self.tcp_client, self.config, self.app)
         self.handler.start()
 
         self.initUI()
@@ -202,6 +203,6 @@ class MainWindow(QWidget):
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow(app)
     window.show()
     sys.exit(app.exec())

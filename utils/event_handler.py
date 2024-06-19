@@ -10,9 +10,10 @@ shm_reverse_data = sysv_ipc.SharedMemory(1235)
 
 class EventHandler(QThread):
 
-    def __init__(self, tcp_client, config):
+    def __init__(self, tcp_client, config, app):
 
         super().__init__()
+        self.app = app
         self.tcp = tcp_client
         self.config = config
 
@@ -41,7 +42,7 @@ class EventHandler(QThread):
                 print("!!!!!! len error or same frame")
                 self.halt_cnt = self.halt_cnt + 1
                 if self.halt_cnt == 20 * 600:
-                    qApp.quit()
+                    self.app.quit()
                 time.sleep(0.05)
                 continue
 
