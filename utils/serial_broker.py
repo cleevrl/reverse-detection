@@ -1,4 +1,3 @@
-import yaml
 import time
 from serial import Serial
 from PySide6.QtCore import QThread
@@ -52,7 +51,7 @@ class SerialBroker(QThread):
                 time.sleep(0.1)
 
                 if self.ser.in_waiting > 0:
-                    recv_data = self.ser.readline()   
+                    recv_data = self.ser.read(10)   
 
                 print(recv_data)
 

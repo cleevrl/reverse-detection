@@ -38,9 +38,9 @@ class EventHandler(QThread):
                 vel_index = 9
 
             if not len(list_data) == 12 or self.pre_frame == list_data[4]:
-                print("!!!!!! len error or same frame")
                 self.halt_cnt = self.halt_cnt + 1
                 if self.halt_cnt == 20 * 600:
+                    print("***** Quit App due to no response!!!! *****")
                     self.app.quit()
                 time.sleep(0.05)
                 continue
