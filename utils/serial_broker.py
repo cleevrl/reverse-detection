@@ -26,7 +26,7 @@ def reset_message(frame_cnt, reset_mode):
     lrc_code = cal_lrc(body)
 
     msg_list = header + body + [lrc_code, 0x7F]
-    print(msg_list)
+    # print(msg_list)
 
     return bytes(msg_list)
 
@@ -53,7 +53,7 @@ class SerialBroker(QThread):
                 if self.ser.in_waiting > 0:
                     recv_data = self.ser.read(10)   
 
-                print(recv_data)
+                # print(recv_data)
 
             else:
                 print("Trying to connect Serial Port. (Every 5 secs)")

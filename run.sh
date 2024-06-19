@@ -17,8 +17,13 @@ else
         source venv/bin/activate
 
         cd kw
-        python main.py &
-        python read.py &
+        python main.py 1>>/dev/null 2>>/dev/null &
+
+        echo "Run main.py ----->"
+        sleep 5        
+
+        python read.py 1>>/dev/null 2>>/dev/null &
+        echo "Run read.py ----->"
 
         cd ..
         python reverse_app.py
