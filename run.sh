@@ -3,7 +3,7 @@
 export PATH_REV="$PWD"
 export PATH_VOICE="$PWD/voice"
 
-echo "echo 'dongbuict0' | sudo -S chmod 777 /dev/ttyTHS1"
+echo 'dongbuict0' | sudo -S chmod 777 /dev/ttyTHS1
 
 REV_RUN=$(ps -ef | grep reverse_app | grep -v 'grep')
 
