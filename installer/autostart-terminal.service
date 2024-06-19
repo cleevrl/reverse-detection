@@ -1,0 +1,9 @@
+[Unit]
+Description=Auto start terminal on boot
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/gnome-terminal
+
+[Install]
+WantedBy=multi-user.target

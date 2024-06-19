@@ -166,6 +166,7 @@ class MainWindow(QWidget):
         self.tcp_client = TCPThread()
         self.tcp_client.start()
         self.handler = EventHandler(self.tcp_client, self.config, self.app)
+        self.handler.sig_quit.connect(self.exit)
         self.handler.start()
 
         self.initUI()

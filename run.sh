@@ -12,7 +12,9 @@ if [ -z "${DISPLAY}" ]; then
 else
     if [ -z "${REV_RUN}" ]; then    
 
-        echo "***** No REV APP, Running App... *****"
+        echo "***** No REV APP, Running App after 3 secs... *****"
+        
+        sleep 3
 
         source venv/bin/activate
 

@@ -1,13 +1,15 @@
 import time
 import sysv_ipc
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 from .voice_utils import play_sound
 
 shm_reverse_data = sysv_ipc.SharedMemory(1235)
 
 
 class EventHandler(QThread):
+
+    sig_quit = Signal()
 
     def __init__(self, tcp_client, config, app):
 
@@ -41,7 +43,7 @@ class EventHandler(QThread):
                 self.halt_cnt = self.halt_cnt + 1
                 if self.halt_cnt == 20 * 600:
                     print("***** Quit App due to no response!!!! *****")
-                    self.app.quit()
+                    self.sig_quit.emit()
                 time.sleep(0.05)
                 continue
 
@@ -52,7 +54,7 @@ class EventHandler(QThread):
                 
                 if not self.reversed:
 
-                    if int(list_data[vel_index]) < 0:
+                    if abs(int(list_data[vel_index])) > 0:
                         self.reverse_cnt = self.reverse_cnt + 1
 
                     if self.reverse_cnt == self.config.yaml_data['reverse_frame']:

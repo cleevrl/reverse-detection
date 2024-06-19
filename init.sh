@@ -26,4 +26,7 @@ pip install installer/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
 mv venv/lib/python3.10/site-packages/ultralytics/engine/results.py venv/lib/python3.10/site-packages/ultralytics/engine/_results.py
 cp installer/kw_results.py venv/lib/python3.10/site-packages/ultralytics/engine/results.py
 
-echo "source reverse-detection/run.sh" >> ~/.bashrc
+{
+    echo "cd ~/reverse-detection"
+    echo "source run.sh"
+} >> ~/.bashrc
