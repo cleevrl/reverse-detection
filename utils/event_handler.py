@@ -20,6 +20,8 @@ class EventHandler(QThread):
         self.reverse_cnt = 0
         self.release_cnt = 0
 
+        self.halt_cnt = 0
+
     def run(self):
 
         while True:
@@ -28,6 +30,11 @@ class EventHandler(QThread):
             str_data = data.decode("utf-8")
             str_data = str_data.partition("\n")[0]
             list_data = str_data.split(" ")
+
+            if self.config['rev_direction']:
+                vel_index = 7
+            else:
+                vel_index = 9
 
             if self.pre_frame == list_data[4]:
 
@@ -44,7 +51,7 @@ class EventHandler(QThread):
                 
                 if not self.reversed:
 
-                    if int(list_data[9]) < 0:
+                    if int(list_data[vel_index]) < 0:
                         self.reverse_cnt = self.reverse_cnt + 1
 
                     if self.reverse_cnt == self.config.yaml_data['reverse_frame']:
@@ -56,10 +63,10 @@ class EventHandler(QThread):
             
                 else:
 
-                    if int(list_data[9]) == 0:
+                    if int(list_data[vel_index]) == 0:
                         self.release_cnt = self.release_cnt + 1
 
-                    if self.release_cnt == 20:
+                    if self.release_cnt == 90:
                         self.release_cnt = 0
                         self.reversed = False
                         self.tcp.sendMessage(False)

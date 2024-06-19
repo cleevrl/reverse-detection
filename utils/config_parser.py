@@ -18,6 +18,9 @@ class ConfigParser:
 
         self.yaml_data['reset_mode'] = value
 
+    def set_rev_direction(self, value):
+
+        self.yaml_data['rev_direction'] = value
 
     def save_yaml(self):
 

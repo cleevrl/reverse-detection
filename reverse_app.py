@@ -1,11 +1,11 @@
 import sys
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QMainWindow, QSpinBox, QButtonGroup, QRadioButton, QPushButton, QLineEdit, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QGroupBox, QLabel
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtWidgets import QApplication, QMainWindow, QCheckBox, QSpinBox, QButtonGroup, QRadioButton, QPushButton, QLineEdit, QGridLayout, QVBoxLayout, QHBoxLayout, QWidget, QGroupBox, QLabel
 
 from utils.config_parser import ConfigParser
 from utils.serial_broker import SerialBroker
 from utils.tcp_sender import TCPThread
-from utils.event_handler import EventHandler
+# from utils.event_handler import EventHandler
 from utils.voice_utils import play_sound
 
 
@@ -69,11 +69,18 @@ class ConfigWidget(QGroupBox):
         self.spb_reverse_frame.setMaximum(50)
         self.spb_reverse_frame.valueChanged.connect(self.config_reverse_frame)
 
+        # reverse direction
+        self.cb_rev_direction = QCheckBox("\u2191")
+        self.cb_rev_direction.stateChanged.connect(self.toggle_rev_direction)
+
         self.spb_reverse_frame.setValue(self.config.yaml_data['reverse_frame'])
+        self.cb_rev_direction.setChecked(self.config.yaml_data['rev_direction'])
 
         config_gbox = QGridLayout()
         config_gbox.addWidget(QLabel("Reverse Frame : "), 0, 0)
         config_gbox.addWidget(self.spb_reverse_frame, 0, 1)
+        config_gbox.addWidget(QLabel("Rev Direction : "), 0, 2)
+        config_gbox.addWidget(self.cb_rev_direction, 0, 3)
 
         config_gbox.addWidget(QLabel("Reset Cycle : "), 1, 0)
         config_gbox.addWidget(self.rbtn_disable, 1, 1)
@@ -84,6 +91,15 @@ class ConfigWidget(QGroupBox):
         config_gbox.addWidget(self.rbtn_1_hour, 2, 3)
 
         self.setLayout(config_gbox)
+
+    def toggle_rev_direction(self, state):
+
+        if state == 2:
+            self.config.set_rev_direction(True)
+            self.cb_rev_direction.setText("\u2193")
+        else:
+            self.config.set_rev_direction(False)
+            self.cb_rev_direction.setText("\u2191")
 
     def config_reverse_frame(self, value):
 
@@ -148,8 +164,8 @@ class MainWindow(QWidget):
         self.serial_broker.start()
         self.tcp_client = TCPThread()
         self.tcp_client.start()
-        self.handler = EventHandler(self.tcp_client, self.config)
-        self.handler.start()
+        # self.handler = EventHandler(self.tcp_client, self.config)
+        # self.handler.start()
 
         self.initUI()
         
@@ -180,7 +196,7 @@ class MainWindow(QWidget):
     def exit(self):
         self.config.save_yaml()
         self.tcp_client.exit()
-        self.handler.exit()
+        # self.handler.exit()
         self.close()
 
 if __name__ == '__main__':
