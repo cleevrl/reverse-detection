@@ -1,6 +1,7 @@
 import time
 import sysv_ipc
 
+from PySide6.QtWidgets import qApp
 from PySide6.QtCore import QThread
 from .voice_utils import play_sound
 
@@ -39,11 +40,14 @@ class EventHandler(QThread):
             if not len(list_data) == 12 or self.pre_frame == list_data[4]:
                 print("!!!!!! len error or same frame")
                 self.halt_cnt = self.halt_cnt + 1
+                if self.halt_cnt == 20 * 600:
+                    qApp.quit()
                 time.sleep(0.05)
                 continue
 
             else:
 
+                self.halt_cnt = 0
                 self.pre_frame = list_data[4]
                 
                 if not self.reversed:
