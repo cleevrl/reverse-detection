@@ -1,7 +1,6 @@
 import time
 import sysv_ipc
 
-from PySide6.QtWidgets import qApp
 from PySide6.QtCore import QThread
 from .voice_utils import play_sound
 
