@@ -31,21 +31,21 @@ class EventHandler(QThread):
             str_data = str_data.partition("\n")[0]
             list_data = str_data.split(" ")
 
-            if self.config['rev_direction']:
+            if self.config.yaml_data['rev_direction']:
                 vel_index = 7
             else:
                 vel_index = 9
+
+            if not len(list_data) == 12:
+                print("!!!!!! len error")
+                time.sleep(0.05)
+                continue
 
             if self.pre_frame == list_data[4]:
 
                 ...
 
             else:
-
-                if not len(list_data) == 12:
-                    print("!!!!!! len error")
-                    time.sleep(0.05)
-                    continue
 
                 self.pre_frame = list_data[4]
                 

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QCheckBox, QSpinBox, QB
 from utils.config_parser import ConfigParser
 from utils.serial_broker import SerialBroker
 from utils.tcp_sender import TCPThread
-# from utils.event_handler import EventHandler
+from utils.event_handler import EventHandler
 from utils.voice_utils import play_sound
 
 
@@ -164,8 +164,8 @@ class MainWindow(QWidget):
         self.serial_broker.start()
         self.tcp_client = TCPThread()
         self.tcp_client.start()
-        # self.handler = EventHandler(self.tcp_client, self.config)
-        # self.handler.start()
+        self.handler = EventHandler(self.tcp_client, self.config)
+        self.handler.start()
 
         self.initUI()
         
@@ -196,7 +196,7 @@ class MainWindow(QWidget):
     def exit(self):
         self.config.save_yaml()
         self.tcp_client.exit()
-        # self.handler.exit()
+        self.handler.exit()
         self.close()
 
 if __name__ == '__main__':
