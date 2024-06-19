@@ -69,7 +69,7 @@ class SerialBroker(QThread):
     def connect(self):
 
         try:
-            self.ser = Serial("/dev/ttyTHS0", buadrate=115200)
+            self.ser = Serial("/dev/ttyTHS1", baudrate=115200)
             self.connected = True
         except:
             print("Serial connection Failed.")
