@@ -36,14 +36,11 @@ class EventHandler(QThread):
             else:
                 vel_index = 9
 
-            if not len(list_data) == 12:
-                print("!!!!!! len error")
+            if not len(list_data) == 12 or self.pre_frame == list_data[4]:
+                print("!!!!!! len error or same frame")
+                self.halt_cnt = self.halt_cnt + 1
                 time.sleep(0.05)
                 continue
-
-            if self.pre_frame == list_data[4]:
-
-                ...
 
             else:
 
