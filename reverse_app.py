@@ -161,7 +161,7 @@ class MainWindow(QWidget):
         self.app = app
         self.config = ConfigParser()
 
-        self.serial_broker = SerialBroker()
+        self.serial_broker = SerialBroker(self.config)
         self.serial_broker.start()
         self.tcp_client = TCPThread()
         self.tcp_client.start()
