@@ -42,7 +42,7 @@ class TCPThread(QThread):
     def __init__(self):
         super().__init__()
 
-        self.host = '192.168.1.222'
+        self.host = '192.168.1.20'
         self.port = 5000
 
         self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
