@@ -2,8 +2,8 @@ from kwse import run,view,se,record,yolo
 import time
 import subprocess
 
-#src='rtsp://admin:dongbuict0@59.14.95.196:55464/ISAPI/Streaming/channels/102/httpPreview'
-src="rtsp://210.99.70.120:1935/live/cctv005.stream"
+src='rtsp://admin:dongbuict0@192.168.1.11:554/ISAPI/Streaming/channels/102/httpPreview'
+#src="rtsp://210.99.70.120:1935/live/cctv005.stream"
 
 # recordRes=True  #처리결과영상 저장 여부 .avi로 저장됨
 # skipCnt=1       # camera 프레임 rate가 10 보다 큰경우 예를들어 30fps인경우 3으로 설정 3프레임중 하나마 yolo inference 하게 설정

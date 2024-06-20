@@ -16,8 +16,8 @@ import os
 # 김제한우 앞 TBT 일반영상 rtsp
 # url = "rtsp://admin:dongbuict0@59.14.95.196:55464/ISAPI/Streaing/channels/102/httpPreview"
 
-# 내부 네트워크 TBT 일반영상 http
-url = "http://admin:qwer1234@192.168.1.11:80/ISAPI/Streaming/channels/102/httpPreview"
+# 내부 네트워크 TBT 일반영상 rtsp
+url = "rtsp://admin:dongbuict0@192.168.1.11:554/ISAPI/Streaming/channels/102/httpPreview"
 
 # uart 통신 확인으로 재부팅을 하는 경우 True 활성화
 is_watchdog = False

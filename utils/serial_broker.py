@@ -32,11 +32,11 @@ def reset_message(frame_cnt, reset_mode):
 
 class SerialBroker(QThread):
 
-    def __init__(self):
+    def __init__(self, config):
 
         super().__init__()
         self.frame_cnt = 0
-        self.reset_mode = '1H'
+        self.reset_mode = config.yaml_data['reset_mode']
 
         self.connect()
 
