@@ -46,6 +46,7 @@ class TCPThread(QThread):
         self.port = 5000
 
         self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.cl.settimeout(5)
         self.connect()
 
 
@@ -72,7 +73,10 @@ class TCPThread(QThread):
 
     def sendMessage(self, reversed):
 
-        if reversed:
-            print("reversed")
+        if self.connected:
+
+            self.cl.send(vms_message(reversed))
+            print(f"TCP Send ---> Reversed : {reversed}")
+
         else:
-            print("normal")
+            print("NO TCP socket connected.")

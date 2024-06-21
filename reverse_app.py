@@ -117,9 +117,10 @@ class ConfigWidget(QGroupBox):
 
 class TestWidget(QGroupBox):
 
-    def __init__(self, tcp_client):
+    def __init__(self, tcp_client, serial_broker):
         super().__init__('for TEST')
         self.tcp_client = tcp_client
+        self.serial_broker = serial_broker
         self.initUI()
 
     def initUI(self):
@@ -145,9 +146,11 @@ class TestWidget(QGroupBox):
 
         self.tcp_client.sendMessage(e)
         self.btn_test_vms.setChecked(e)
+        self.serial_broker.reversed = e
 
     def force_reversed(self, e):
 
+        self.serial_broker.reversed = e
         self.tcp_client.sendMessage(e)
         if e:
             play_sound()
@@ -179,7 +182,7 @@ class MainWindow(QWidget):
 
         status_widget = StatusWidget()
         config_widget = ConfigWidget(self.config, self.serial_broker)
-        test_widget = TestWidget(self.tcp_client)
+        test_widget = TestWidget(self.tcp_client, self.serial_broker)
 
         btn_hbox = QHBoxLayout()
         btn_hbox.addWidget(self.btn_exit)
