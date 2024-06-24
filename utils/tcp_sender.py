@@ -1,8 +1,6 @@
 import time
 import socket
 
-from PySide6.QtCore import QThread, Signal
-
 def cal_lrc(msg):
 
     lrc = 0
@@ -35,47 +33,35 @@ def vms_message(reversed):
 
     return message
 
+def send_tcp(host, port, reversed):
 
-class TCPThread(QThread):
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    try:
+         
+        client_socket.connect((host, port))
+        print(f"TCP connected. ---> {host}:{port} ")
 
-    finished = Signal()
+        client_socket.send(vms_message(reversed))
+        print(f"TCP Send ---> Reversed : {reversed}")
 
-    def __init__(self):
-        super().__init__()
-
-        self.host = '192.168.1.20'
-        self.port = 5000
-
-        self.cl = None
-
-    def run(self):
-
-        try:
-            self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.cl.settimeout(5)
-            self.cl.connect()
-            print(f"TCP connected. ---> {self.host}:{self.port} ")
-
-            while True:
-                recv_data = self.cl.recv(1024)
-                print(f"{recv_data.decode()}")
-                time.sleep(1)
+        recv_data = client_socket.recv(1024)
+        print(f"{recv_data.decode()}")
         
-        except Exception as e:
-            print(f"Exception: {e}")
+    except Exception as e:
+        print(f"Exception: {e}")
 
-        finally:
-            if self.cl:
-                self.cl.close()
-            
-            self.finished.emit()
+    finally:
+        client_socket.close()
 
-    def sendMessage(self, reversed):
 
-        if self.cl:
+if __name__ == "__main__":
 
-            self.cl.send(vms_message(reversed))
-            print(f"TCP Send ---> Reversed : {reversed}")
+    host = "192.168.1.20"
+    port = 5000
 
-        else:
-            print("NO TCP socket connected.")
+    send_tcp(host, port, True)
+    time.sleep(10)
+    send_tcp(host, port, False)
+
+    print("Test End.")

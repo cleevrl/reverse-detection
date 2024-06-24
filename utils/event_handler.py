@@ -3,6 +3,7 @@ import sysv_ipc
 
 from PySide6.QtCore import QThread, Signal
 from .voice_utils import play_sound
+from .tcp_sender import send_tcp
 
 shm_reverse_data = sysv_ipc.SharedMemory(1235)
 
@@ -11,11 +12,10 @@ class EventHandler(QThread):
 
     sig_quit = Signal()
 
-    def __init__(self, tcp_client, config, app):
+    def __init__(self, config, app):
 
         super().__init__()
         self.app = app
-        self.tcp = tcp_client
         self.config = config
 
         self.reversed = False
@@ -61,7 +61,7 @@ class EventHandler(QThread):
                         print("Reverse Event")
                         self.reverse_cnt = 0
                         self.reversed = True
-                        self.tcp.sendMessage(True)
+                        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
                         play_sound()
             
                 else:
@@ -72,7 +72,7 @@ class EventHandler(QThread):
                     if self.release_cnt == 90:
                         self.release_cnt = 0
                         self.reversed = False
-                        self.tcp.sendMessage(False)
+                        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
 
                 print(f"Reversed : {self.reversed} / rev_cnt : {self.reverse_cnt} / rel_cnt : {self.release_cnt}")
 

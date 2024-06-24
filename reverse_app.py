@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QCheckBox, QSpinBox, QB
 
 from utils.config_parser import ConfigParser
 from utils.serial_broker import SerialBroker
-from utils.tcp_sender import TCPThread
+from utils.tcp_sender import send_tcp
 from utils.event_handler import EventHandler
 from utils.voice_utils import play_sound
 
@@ -24,7 +24,6 @@ class StatusWidget(QGroupBox):
 
     def initUI(self):
 
-        self.status = QLabel(f"TEST : {self.counter}")
         status_gbox = QGridLayout()
         status_gbox.addWidget(self.status, 0, 0)
 
@@ -33,6 +32,7 @@ class StatusWidget(QGroupBox):
     def update(self):
         self.counter = self.counter + 1
         self.status.setText(f"TEST : {self.counter}")
+
 
 class ConfigWidget(QGroupBox):
 
@@ -117,10 +117,10 @@ class ConfigWidget(QGroupBox):
 
 class TestWidget(QGroupBox):
 
-    def __init__(self, tcp_client, serial_broker):
+    def __init__(self, config, serial_broker):
         super().__init__('for TEST')
-        self.tcp_client = tcp_client
         self.serial_broker = serial_broker
+        self.config = config
         self.initUI()
 
     def initUI(self):
@@ -143,15 +143,15 @@ class TestWidget(QGroupBox):
         self.setLayout(test_hbox)
 
     def toggle_vms(self, e):
-
-        self.tcp_client.sendMessage(e)
+        
+        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
         self.btn_test_vms.setChecked(e)
         self.serial_broker.reversed = e
 
     def force_reversed(self, e):
 
         self.serial_broker.reversed = e
-        self.tcp_client.sendMessage(e)
+        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
         if e:
             play_sound()
         self.btn_test_reverse.setChecked(e)
@@ -166,11 +166,9 @@ class MainWindow(QWidget):
 
         self.serial_broker = SerialBroker(self.config)
         self.serial_broker.start()
-        self.handler = EventHandler(self.tcp_client, self.config, self.app)
+        self.handler = EventHandler(self.config, self.app)
         self.handler.sig_quit.connect(self.exit)
         self.handler.start()
-
-        self.start_tcp_client()
 
         self.initUI()
         
@@ -182,7 +180,7 @@ class MainWindow(QWidget):
 
         status_widget = StatusWidget()
         config_widget = ConfigWidget(self.config, self.serial_broker)
-        test_widget = TestWidget(self.tcp_client, self.serial_broker)
+        test_widget = TestWidget(self.config, self.serial_broker)
 
         btn_hbox = QHBoxLayout()
         btn_hbox.addWidget(self.btn_exit)
@@ -198,14 +196,8 @@ class MainWindow(QWidget):
 
         self.setLayout(main_vbox)
 
-    def start_tcp_client(self):
-        self.tcp_client = TCPThread()
-        self.tcp_client.finished.connect(self.start_tcp_client)
-        self.tcp_client.start()
-
     def exit(self):
         self.config.save_yaml()
-        self.tcp_client.exit()
         self.handler.exit()
         self.close()
 
