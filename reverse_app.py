@@ -24,6 +24,8 @@ class StatusWidget(QGroupBox):
 
     def initUI(self):
 
+        self.status = QLabel(f"TEST : {self.counter}")
+
         status_gbox = QGridLayout()
         status_gbox.addWidget(self.status, 0, 0)
 
