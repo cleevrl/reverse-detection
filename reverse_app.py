@@ -166,11 +166,11 @@ class MainWindow(QWidget):
 
         self.serial_broker = SerialBroker(self.config)
         self.serial_broker.start()
-        self.tcp_client = TCPThread()
-        self.tcp_client.start()
         self.handler = EventHandler(self.tcp_client, self.config, self.app)
         self.handler.sig_quit.connect(self.exit)
         self.handler.start()
+
+        self.start_tcp_client()
 
         self.initUI()
         
@@ -197,6 +197,11 @@ class MainWindow(QWidget):
         main_vbox.addWidget(btn_widget)
 
         self.setLayout(main_vbox)
+
+    def start_tcp_client(self):
+        self.tcp_client = TCPThread()
+        self.tcp_client.finished.connect(self.start_tcp_client)
+        self.tcp_client.start()
 
     def exit(self):
         self.config.save_yaml()

@@ -1,7 +1,7 @@
 import time
 import socket
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 
 def cal_lrc(msg):
 
@@ -12,16 +12,6 @@ def cal_lrc(msg):
     
     return lrc
 
-
-def is_socket_connected(sock):
-
-    try:
-        sock.getsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE)
-        return True
-    except Exception as e:
-        print(f"TCP Conection error : {e}")
-        return False
-    
 def vms_message(reversed):
 
     device_id = 0x01
@@ -48,46 +38,41 @@ def vms_message(reversed):
 
 class TCPThread(QThread):
 
+    finished = Signal()
+
     def __init__(self):
         super().__init__()
 
         self.host = '192.168.1.20'
         self.port = 5000
 
-        self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.cl.settimeout(5)
-        self.connect()
+        self.cl = None
 
-
-    def connect(self):
-
-        try:
-            self.cl.connect((self.host, self.port))
-            print(f"TCP Socket connected. ---> {self.host}:{self.port}")
-            self.connected = True
-        except:
-            print("TCP Connection Failed.")
-            self.connected = False
-    
     def run(self):
 
-        while True:
+        try:
+            self.cl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.cl.settimeout(5)
+            self.cl.connect()
+            print(f"TCP connected. ---> {self.host}:{self.port} ")
 
-            self.connected = is_socket_connected(self.cl)
-            
-            if self.connected:    
-                print("Waiting message from server ...")
+            while True:
+                recv_data = self.cl.recv(1024)
+                print(f"{recv_data.decode()}")
                 time.sleep(1)
-            else:
-                print("Trying to connect TCP server. (Every 5 secs)")
-                time.sleep(5)
-                self.connect()
+        
+        except Exception as e:
+            print(f"Exception: {e}")
+
+        finally:
+            if self.cl:
+                self.cl.close()
+            
+            self.finished.emit()
 
     def sendMessage(self, reversed):
 
-        self.connected = is_socket_connected(self.cl)
-
-        if self.connected:
+        if self.cl:
 
             self.cl.send(vms_message(reversed))
             print(f"TCP Send ---> Reversed : {reversed}")
