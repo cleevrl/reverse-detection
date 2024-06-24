@@ -14,18 +14,14 @@ def cal_lrc(msg):
 
 
 def is_socket_connected(sock):
+
+    try:
+        sock.getsockopt(socket.SOL_TCP, socket.TCP_KEEPALIVE)
+        return True
+    except Exception as e:
+        print(f"TCP Conection error : {e}")
+        return False
     
-    error = sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-    
-    if error == 0:
-        res = True
-    else:
-        print(f"TCP Conection error : {error}")
-        res = False
-
-    return res
-
-
 def vms_message(reversed):
 
     device_id = 0x01
@@ -88,6 +84,8 @@ class TCPThread(QThread):
                 self.connect()
 
     def sendMessage(self, reversed):
+
+        self.connected = is_socket_connected(self.cl)
 
         if self.connected:
 
