@@ -64,14 +64,15 @@ class EventHandler(QThread):
                         self.reverse_cnt = 0
                         self.reversed = True
                         send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
-                        play_sound()
             
                 else:
+                    
+                    play_sound()
 
                     if int(list_data[vel_index]) == 0:
                         self.release_cnt = self.release_cnt + 1
 
-                    if self.release_cnt == 90:
+                    if self.release_cnt == 50:
                         self.release_cnt = 0
                         self.reversed = False
                         send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
