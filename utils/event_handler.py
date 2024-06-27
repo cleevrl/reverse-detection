@@ -56,6 +56,8 @@ class EventHandler(QThread):
 
                     if abs(int(list_data[vel_index])) > 0:
                         self.reverse_cnt = self.reverse_cnt + 1
+                    else:
+                        self.reverse_cnt = 0
 
                     if self.reverse_cnt == self.config.yaml_data['reverse_frame']:
                         print("Reverse Event")

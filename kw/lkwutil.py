@@ -171,37 +171,89 @@ def sendSpeedtoSharedMemory(text):
     memory2.write(str(text)+"\n")
 
 
-def resFromFile(src,w,h,frame_count):
+def resFromFile(w,h):
    
     # input()
     val=memory.read()
     vstr= val.decode("utf-8")
     vstr = vstr.partition("]")[0]
-    print(vstr)
+    # print(vstr)
     val1=vstr.replace("[","").replace("]","").replace("'","")
-    print(f'val{val1}')
+    # print(f'val{val1}')
   
     Lines=val1.split(',')
     boxes=[]
     ids=[]
     for line in Lines:
-        print(line)
+        # print(line)
         val = line.split(' ')
         # for val in vals:
-        print(len(val))
+        print(val)
         if len(val) >1 :
+            c= int(val[1])
             x1= int(float(val[2])*w)
             y1= int(float(val[3])*h)
             w1= int(float(val[4])*w)
             h1= int(float(val[5])*h)
             # print(val[1])
-            print(x1,y1,w1,h1)
-            boxes.append((x1-w1/2,y1-h1/2,w1,h1))
-        if len(val)>6:
-            ids.append(int(val[6]))
+            # print(x1,y1,w1,h1)
+            boxes.append((c,x1,y1,w1,h1))
         else:
-            ids.append(0)
-    return boxes, ids
+            timestamp=val[0]
+        # if len(val)>6:
+        #     ids.append(int(val[6]))
+        # else:
+        #     ids.append(0)
+    return boxes, timestamp
+
+def find_min_index(lst):
+    min_value = min(lst)
+    min_index = lst.index(min_value)
+    return min_index
+def find_min_value(lst):
+    min_value = min(lst)
+    # min_index = lst.index(min_value)
+    return min_value
+
+def find_dist_matrix(pboxes,boxes,hsize,diff,f,frame_count):
+    mat=[]
+    # print(diff)
+    # print(pboxes,boxes)
+    ppx=0
+    ppy=0
+    if diff==0:
+        return mat
+    if not pboxes or not boxes: 
+        return mat
+    for box in boxes:
+        c,x,y,w,h=box
+        d=100
+        ppy=0
+        for pbox in pboxes:
+            c,px,py,pw,ph=pbox
+            if(calculate_distance(x,y,px,py)<d):
+                d=calculate_distance(x,y,px,py)
+                ppy=py
+                ppx=px
+        if c==5:
+            hsize=1.5*hsize
+        if c==7:
+            hsize=2*hsize     
+        dreal=d/(h/hsize)
+        speedms=dreal/diff
+        
+     
+        speedkm = speedms * 3.6
+        if speedkm>150:
+            continue
+        if(ppy<y):
+            speedkm=-speedkm
+        text=f'\nframe {str(frame_count)} x {x},y {y},w {w},h {h},ppx {ppx},ppy {ppy},d {d}, diff {diff},dreal {dreal},speedms {speedms},speedkm {speedkm}'
+        f.write(text)
+        mat.append((x,y,w,h,speedkm))
+    # print(mat)
+
+    return mat
    
 def resFromFileFile(src,w,h,frame_count):
     

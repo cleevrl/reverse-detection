@@ -159,7 +159,7 @@ def boxinRoinew(boxes,roi):
     # points = points.reshape((-1,1,2)).tolist() #pts 
 
     for box in boxes:
-        x,y,w,h=box
+        c,x,y,w,h=box
         if(XyInsideRoi((x,y),roi)):
             nboxes.append(box)
     return nboxes
@@ -295,13 +295,16 @@ def get_ab(pts):
     y2= (pts[2][1]+pts[3][1])/2 # (y1+y2)2
     a,b=cal_ab(y1,d1,y2,d2)
     return a,b
-def get_distance(pts1,pts2,a,b):
+def get_distance_ab(pts1,pts2,a,b):
     d=calculate_distance(pts1,pts2)
     y1= (pts1[1]+pts2[1])/2
     yppm=(y1*a+b)/3.5
     dreal=d/yppm
-    print(f'Y {y1} pixel {d},yppm {yppm},dreal{dreal}')
+    # print(f'Y {y1} pixel {d},yppm {yppm},dreal{dreal}')
     return d,dreal
+def get_distance(pts1,pts2):
+    d=calculate_distance(pts1,pts2)
+    return d
 def getPpm_ab(img):
     #h,w=img.shape[:2]
     # img = cv.resize(img, dsize=(w*2, h*2), interpolation=cv.INTER_AREA)

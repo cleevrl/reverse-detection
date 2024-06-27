@@ -111,7 +111,7 @@ file="resskip1/05-26_16:11:35res_org.csv"
 file='live005_1/05-26_17:44:47res_cctv005.csv'
 file='live005_1/05-26_17:55:21res_05-26_17:44:47res_cctv005.csv'
 run_one(file,1,1)
-
+/home/kw/projects/release/runs/detect/predict/labels/cctv005_0.txt
 # resskip1/05-26_16:11:35res_org.csv
 # run_all("res_cctv005.csv",1)
 

@@ -11,51 +11,8 @@ from roi import getRoiValue ,boxinRoinew, drawpolylines,RoiStat,getPpm_ab,get_di
 import time
 import os
 
-from lkwutil import getResFileName ,getCsvFileName,sendUDP,dist,mkdirfromfilename,getResFileNamewithdir,resFromFile,sendSpeedtoSharedMemory
+from lkwutil import getResFileName ,getCsvFileName,sendUDP,dist,mkdirfromfilename,getResFileNamewithdir,resFromFile,sendSpeedtoSharedMemory,find_dist_matrix
 
-# custom dataset으로 fine-tunning한 YOLOv8 model
-# model = YOLO("best.pt")
-# model=YOLO("../yolov8n.engine")
-
-# Open the video file: 광교중앙역 cctv영상을 https://www.utic.go.kr/map/map.do?menu=cctv 에서 녹화한 영상
-
-# print('Starting the UDP sender ~~')
-UDPserver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-UDPserver.settimeout(5)
-# src='/home/kw/dbict/Car-Speed-Estimation-using-YOLOv8/video/video.mp4'
-# src="/home/kw/JetsonYoloV7-TensorRT/videos/testvideo1.mp4"
-# filename=src.split("/")[-1]
-# rack history 저장을 위한 dictls
-
-track_history = defaultdict(lambda: [])
-
-IMAGE_H = 1152
-IMAGE_W = 720
-src = np.float32([[380.4, 613.6], [1058.4, 561.6], [363.2, 301.2], [666.4, 268.4]])
-dst = np.float32([[37.289227, 127.050917], [37.289039, 127.050644], [37.288842, 127.051426], [37.288655, 127.051158]])
-lat_long_dst = np.float32([[37.289227, 127.050917], [37.289039, 127.050644], [37.288842, 127.051426], [37.288655, 127.051158]])
-
-# python의 haversine 라이브러리로 각 위경도 좌표간의 거리를 계산
-dst = np.float32([haversine(dst[0], i, unit="m") for i in dst])
-print(dst)  # [0, 31.943, 61.973, 67.023]
-
-dst = np.float32([[0, 0], [31.943, 0], [0, 61.973], [31.943, 61.973]])
-
-lat_long_M = cv2.getPerspectiveTransform(src, lat_long_dst)
-M = cv2.getPerspectiveTransform(src, dst)  # The transformation matrix
-# print(f"M : {M}")
-# print(f"M : {lat_long_M}")
-
-car_dict = defaultdict(list) # tracking되는 차별 id마다 변화되는 미터좌표계 저장ls
-
-speed_dict = defaultdict(list) # 평균 속력 계산
-speed_dict1 = defaultdict(list) # 평균 속력 계산
-
-EntryTime= defaultdict(list) # 평균 속력 계산
-
-lat_long_data = defaultdict(list)
-
-#  cv.pointPolygonTest(contours[0], (j,i), True)
 
 def FindPoint(x1, y1, x2, 
               y2, x, y) :
@@ -268,7 +225,116 @@ def calppm(y):
 def calmeter(y,d):
     return(int(d/calppm(y)*100))
 
-def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,duration,yolo,hsize):
+def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,duration,yolo,hsize):
+# def run():
+    frame_count = 0
+    cap = cv2.VideoCapture(src1)
+
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    fps=10
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for MP4 format
+
+# Set up the video writer
+   
+    print(f"Video FPS: {fps}  {width} {height}frames per second") # 24 fps
+
+    txtfileName =resdir+getResFileName(src1)
+    csvfileName=txtfileName.replace("txt","csv")
+ 
+    if not os.path.exists(resdir):
+        os.makedirs(resdir)
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Codec for MP4 format
+
+    res = cv2.VideoWriter(resdir+"res"+getResFileName(src1).replace("txt","avi"), fourcc, fps, (width, height))
+    rawv = cv2.VideoWriter(resdir+"raw"+getResFileName(src1).replace("txt","avi"), fourcc, fps, (width, height))
+    
+    f=open(txtfileName,"w")
+    fcsv=open(csvfileName,"w")
+    fcsv.write("frame,time,id,x,y,w,h,area")
+  
+    preboxes=[]
+    pretime=0
+  
+    while cap.isOpened():
+        success, frame = cap.read()
+        if recordRaw:
+            rawv.write(frame)
+        frame_count += 1
+        if frame_count==1:
+            roi=getRoiValue(frame)
+        if frame_count%skipCnt!=0:
+            continue
+       
+        frame=drawpolylines(frame,roi)
+        annotated_frame=frame
+     
+
+        if success:
+            # Yolov8 tracking 이용
+            if yolo:
+                results = model.track(frame, persist=True)
+                boxes = results[0].boxes.xywh.cpu()
+                
+                if results[0].boxes.id is not None:
+                    track_ids = results[0].boxes.id.int().cpu().tolist()
+                    rawv.write(frame)
+            else:
+                boxes,timen = resFromFile(width,height)
+            boxes=boxinRoinew(boxes,roi)
+            mat=find_dist_matrix(preboxes,boxes,hsize,float(timen)-float(pretime),f,frame_count)
+                # print(mat)
+            preboxes=boxes
+            pretime=timen
+         
+            framespeed=[]
+            framespeedrev=[]
+            for m in mat:
+                x,y,w,h,s=m
+                cv2.putText(annotated_frame, str(int(s)), (int(x), int(y) + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.rectangle(annotated_frame, (int(x-w/2), int(y-h/2), int(w), int(h)), (0, 255, 0), 2)
+                # cv2.rectangle(annotated_frame, (int(x), int(y), int(w), int(h)), (0, 255, 0), 2)
+
+                if s <0:
+                    framespeed.append(s)
+                else:
+                    framespeedrev.append(s)
+
+                now =time.strftime('%Y.%m.%d-%H:%M:%S')
+                text= f'\n frm: {now} {frame_count} now {int(x)}, {int(y)} speed :{s:.2f} kmh'
+                f.write(text)
+
+
+            if len(framespeed) !=0:
+                Fspeed=int(sum(framespeed)/len(framespeed))
+            else:
+                Fspeed=0
+            if len(framespeedrev) !=0:
+                Fspeedrev=int(sum(framespeedrev)/len(framespeedrev))
+            else:
+                Fspeedrev=0    
+
+            now =time.strftime('%Y.%m.%d - %H:%M:%S') 
+            text= f'{now} frm {frame_count}  forward {Fspeed} reverse {Fspeedrev} km/h '
+            print(text)
+            sendSpeedtoSharedMemory(text)
+      
+            if recordRes:
+                    res.write(annotated_frame)
+
+            if showvideo:
+                cv2.imshow("YOLOv8 Tracking", annotated_frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+        else:
+            break
+    f.close()
+    cap.release()
+    cv2.destroyAllWindows()
+
+def runold(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,duration,yolo,hsize):
 # def run():
     frame_count = 0
     model = YOLO("yolov8n.engine")
@@ -341,7 +407,7 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
             a,b=getPpm_ab(frame)
         if frame_count%skipCnt!=0:
             continue
-        print(roi)
+    #   print(roi)
         frame=drawpolylines(frame,roi)
 
      
@@ -357,9 +423,9 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                     track_ids = results[0].boxes.id.int().cpu().tolist()
                     rawv.write(frame)
             else:
-                boxes,track_ids = resFromFile(src1,width,height,frame_count)
+                boxes,timestamp = resFromFile(src1,width,height,frame_count)
 
-            boxes=boxinRoinew(boxes,roi)
+            # boxes=boxinRoinew(boxes,roi)
             carCount=len(boxes)
             # if annotionOn:
             #     annotated_frame = results[0].plot()
@@ -375,6 +441,7 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                 x1=int(x)
                 y1=int(y)
                 text= f'\n {frame_count} ,{time.time()}, {track_id}, {x}, {y}, {w} , {h} '
+                # print(text)
                 fcsv.write(text)
                 track = track_history[track_id]
                 cv2.rectangle(annotated_frame, (int(x), int(y), int(w), int(h)), (0, 255, 0), 2)
@@ -382,8 +449,10 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                 if len(track)>2:
                     px,py=track[-1]
                     # text= f'{frame_count} {track_id}, {px}, {py} , {int(x)}, {int(y)}'
-                    d,dreal=get_distance((px,py),(x,y),a,b)             
+                    d=get_distance((px,py),(x,y))             
+                    # d,dreal=get_distance((px,py),(x,y),a,b)  
                     dreal=d/(h/hsize)
+
                     # print(text)
                     # print(d,dreal,dreal1)
                     # # input("2")
@@ -391,12 +460,21 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                     # d,da=dist(px,py,x,y,5)
                     
                     speed1 = dreal * ((fps/skipCnt) / 1000) * 3600 
-                    if(speed1 <10):
-                        speed1=0
-                    if(speed1 >100):
-                        speed1=100
+                    # if(speed1 <10):
+                    #     speed1=0
+                    # if(speed1 >100):
+                    #     speed1=100
                     if(py>y):
                         speed1= -speed1
+                    # if(d>hsize*4):
+                    #     print(f' d too big {frame_count}, {track_id}, {px}, {py}, {int(x)}, {int(y)}, {d}')
+                    #     continue  
+                    # else:
+                    #     print(f' d {frame_count}, {track_id}, {px}, {py}, {int(x)}, {int(y)}, {d}')
+
+
+
+                    
                     # da=d*480/(480-y)*3
 
                 # speed1=calmeter((y+py)/2,d)*(100/fps)/skipCnt
@@ -404,7 +482,8 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                 # cal=calmeter((y+py)/2,d)   
                 # speed1= (calmeter((y+py)/2,d)/3.5) * ((fps/skipCnt) / 1000) * 3600 # 1초당 24fps -> 1frame당 1/24초, 거리/(1/24)*3600/1000 -> km/h로 변환
                 now =time.strftime('%Y.%m.%d-%H:%M:%S')
-                text= f'\n frm: {now} {frame_count} track {track_id}, pre {px}, {py} , now {int(x)}, {int(y)}, d: {d:.2f} pixel, a{a} , b{b} ,dreal {dreal} meter, speed :{speed1:.2f} kmh'
+                text= f'\n frm: {now} {frame_count} track {track_id}, pre {px}, {py} , now {int(x)}, {int(y)}, d: {d:.2f} pixel,dreal {dreal:.2f} meter, speed :{speed1:.2f} kmh'
+                print(text)
                 f.write(text)
                 track.append((int(x), int(y))) # x, y center point
 
@@ -471,8 +550,8 @@ def run(src1,recordRaw,recordRes,resdir,skipCnt,showvideo,annotionOn,addr,port,d
                           
 
                         text= f'\n frm avg : {frame_count} at ({int(x)},{int(y)}) 속도 : {int(avg_speed)} km/h, 속도2 : {int(avg_speed1)} km/h, id: {track_id} '
-                        print(text)
-                        f.write(f' aso {int(avg_speed)}, as1 {int(avg_speed1)} ')
+                        # print(text)
+                        # f.write(f' aso {int(avg_speed)}, as1 {int(avg_speed1)} ')
                         # f.write(text)
                         # cv2.putText(annotated_frame, str(track_id), (int(x), int(y) ), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
                         cv2.putText(annotated_frame, str(carCount), (100,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
