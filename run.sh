@@ -25,7 +25,9 @@ else
         sleep 5        
 
         python read.py 1>>/dev/null 2>>/dev/null &
+        
         echo "Run read.py ----->"
+        sleep 5
 
         cd ..
         python reverse_app.py
