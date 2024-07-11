@@ -145,15 +145,19 @@ class TestWidget(QGroupBox):
         self.setLayout(test_hbox)
 
     def toggle_vms(self, e):
-        
-        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
+
+        if self.config.yaml_data['old_can']:
+            self.serial_broker.reversed = 0 
+        else:
+            send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
         self.btn_test_vms.setChecked(e)
-        self.serial_broker.reversed = e
 
     def force_reversed(self, e):
 
-        self.serial_broker.reversed = e
-        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
+        if self.config.ysml_data['old_can']:
+            self.serial_broker.reversed = e
+        else:
+            send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
         if e:
             play_sound()
         self.btn_test_reverse.setChecked(e)
@@ -168,7 +172,7 @@ class MainWindow(QWidget):
 
         self.serial_broker = SerialBroker(self.config)
         self.serial_broker.start()
-        self.handler = EventHandler(self.config, self.app)
+        self.handler = EventHandler(self.config, self.app, self.serial_broker)
         self.handler.sig_quit.connect(self.exit)
         self.handler.start()
 

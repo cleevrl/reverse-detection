@@ -12,11 +12,13 @@ class EventHandler(QThread):
 
     sig_quit = Signal()
 
-    def __init__(self, config, app):
+    def __init__(self, config, app, serial):
 
         super().__init__()
         self.app = app
         self.config = config
+
+        self.serial = serial
 
         self.reversed = False
         self.pre_frame = -1
@@ -63,7 +65,12 @@ class EventHandler(QThread):
                         print("Reverse Event")
                         self.reverse_cnt = 0
                         self.reversed = True
-                        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
+
+                        if not self.config.yaml_data['old_can']:
+                            send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
+
+                        else:
+                            self.serial.reversed = self.reversed
             
                 else:
                     
@@ -75,7 +82,12 @@ class EventHandler(QThread):
                     if self.release_cnt == 50:
                         self.release_cnt = 0
                         self.reversed = False
-                        send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
+
+                        if not self.config.yaml_data['old_can']:
+                            send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], self.reversed)
+
+                        else:
+                            self.serial.reversed = self.reversed
 
                 print(f"Reversed : {self.reversed} / rev_cnt : {self.reverse_cnt} / rel_cnt : {self.release_cnt}")
 
