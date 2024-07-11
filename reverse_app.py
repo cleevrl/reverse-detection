@@ -147,14 +147,14 @@ class TestWidget(QGroupBox):
     def toggle_vms(self, e):
 
         if self.config.yaml_data['old_can']:
-            self.serial_broker.reversed = 0 
+            self.serial_broker.reversed = e
         else:
             send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
         self.btn_test_vms.setChecked(e)
 
     def force_reversed(self, e):
 
-        if self.config.ysml_data['old_can']:
+        if self.config.yaml_data['old_can']:
             self.serial_broker.reversed = e
         else:
             send_tcp(self.config.yaml_data['vms_host'], self.config.yaml_data['vms_port'], e)
