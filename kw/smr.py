@@ -12,4 +12,4 @@ while True:
     print(vstr)
     # print(text)
     i+=1
-    time.sleep(.1)
+    time.sleep(.09)

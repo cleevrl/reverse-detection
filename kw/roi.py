@@ -153,7 +153,7 @@ def getppmref(img):
     return pts
 
 
-def boxinRoinew(boxes,roi):
+def boxinRoinewold(boxes,roi):
     nboxes=[]
     # points = np.array(roi, np.int32)
     # points = points.reshape((-1,1,2)).tolist() #pts 
@@ -164,6 +164,20 @@ def boxinRoinew(boxes,roi):
             nboxes.append(box)
     return nboxes
 
+
+def boxinRoinew(boxes,roi):
+    nboxes=[]
+    # points = np.array(roi, np.int32)
+    # points = points.reshape((-1,1,2)).tolist() #pts 
+
+    for box in boxes:
+        c,x,y,w,h=box
+        yy=int(y+h/2)
+        # if(XyInsideRoi((x,y),roi)):
+        if(XyInsideRoi((x,y),roi) or (XyInsideRoi((x,yy),roi))):
+            nboxes.append(box)
+    # nboxes=removedupbox(nboxes)
+    return nboxes
 def XyInsideRoi(point,polygon):
 #    def is_point_in_polygon(point, polygon):
     """
@@ -244,6 +258,19 @@ def RoiStatroi(pre,cur,roi):
 
 
 # src = cv.imread('img/milkdrop.bmp', cv.IMREAD_GRAYSCALE)
+def readRoiValue():
+    try:
+        f=open("roi.txt","r")
+        txt=f.readline()
+        values = txt.replace("(","").replace(")","").replace("[","").replace("]","").split(',')
+        roi=[]
+        for i in range(4):
+            roi.append((int(values[2*i+0]),int(values[2*i+1])))
+        return(roi)
+          
+        #   print(v)
+    except:
+        return 0
 def getRoiValue(img):
     try:
         f=open("roi.txt","r")

@@ -167,7 +167,7 @@ memory2=sysv_ipc.SharedMemory(1235,flags=sysv_ipc.IPC_CREAT|777,size=1000)
 def sendSpeedtoSharedMemory(text):
 
     print(text)
-    memory2.write(b'\x00' * memory.size)
+    # memory2.write(b'\x00' * memory.size)
     memory2.write(str(text)+"\n")
 
 
@@ -188,7 +188,7 @@ def resFromFile(w,h):
         # print(line)
         val = line.split(' ')
         # for val in vals:
-        print(val)
+        # print(val)
         if len(val) >1 :
             c= int(val[1])
             x1= int(float(val[2])*w)
@@ -215,9 +215,138 @@ def find_min_value(lst):
     # min_index = lst.index(min_value)
     return min_value
 
-def find_dist_matrix(pboxes,boxes,hsize,diff,f,frame_count):
+def removedup(mats):
+    newmat=[]
+    pxyarr=[]
+    smats = sorted(mats, key = lambda x:x[6])
+    # print(smats)
+
+    for mat in smats:
+        x,y,w,h,px,py,d,ph=mat
+        if (px,py) not in pxyarr:
+            pxyarr.append((px,py))
+            newmat.append(mat)
+            # print("OKKKKKKKKKKKKKKKKKKK")
+            # print(mat)
+
+        else:
+            # print("dupppppppppppppp")
+            # print(mat)
+            # print(px,py)
+            continue
+    # print("newmat")
+    # print(newmat)
+    return newmat
+
+
+
+ 
+def pairmat(pboxes,boxes,hsize,diff,f,i):
+# def pairmat(pboxes,boxes):
+
     mat=[]
-    # print(diff)
+    if not pboxes or not boxes: 
+        return mat
+
+    for box in boxes:
+        c,x,y,w,h=box
+        # y=int(y+h/2)
+        # if h <20:
+        #     continue
+        # print(f'box{box}')
+        d=100
+        dy=100
+        ppy=0
+        ppx=0
+        pph=1
+        spd=0
+        for pbox in pboxes:
+            c,px,py,pw,ph=pbox
+            # if ph <20:
+            #     continue
+            dd=calculate_distance0(x,y,px,py)
+            if(dd<d):
+                d=dd
+                ppy=py
+                ppx=px
+                pph=ph
+        
+        mat.append((d,x,y,w,h,ppx,ppy,pph,int(100*h/pph)))
+        # print(x,y,px,py)
+    # mat=removedup(mat)
+    f.write(f'\nframe{i}pre{str(pboxes)}\n')
+    f.write(f'boxes{str(boxes)}\n')
+    f.write(f'mat{str(mat)}\n')
+    mat=removedup(mat)
+    f.write(f'new mat{str(mat)}\n')
+    return mat
+
+
+
+# def pairmat(i,pboxes,boxes):
+# def pairmat(pboxes,boxes,hsize,diff,f,i):
+# def find_dist_matrx(pboxes,boxes,hsize,diff,f,frame_count,minh):
+def find_dist_matrix(pboxes,boxes,hsize,diff,f,frame_count,minh):
+    mat=[]
+    # print("filen")
+    print(diff)
+    # print(pboxes,boxes)
+    # ppx=0
+    # ppy=0
+    if diff==0:
+        return mat
+    if not pboxes or not boxes: 
+        return mat
+    for box in boxes:
+        c,x,y,w,h=box
+
+        # if h <minh:
+        #     continue
+        # print(f'box{box}')
+        d=100
+        dy=100
+        ppy=0
+        ppx=0
+        pph=1
+        spd=0
+        for pbox in pboxes:
+            c,px,py,pw,ph=pbox
+            # if ph <minh:
+            #     continue
+            # print(f'prebox{pbox}')
+            dd=calculate_distance(x,y,px,py)
+            if(dd<d):
+                d=dd
+                ppy=py
+                ppx=px
+                pph=ph
+        mat.append((x,y,w,h,ppx,ppy,d,pph))
+        # print(x,y,px,py)
+    # mat=removedup(mat)
+    f.write(f'\nframe{frame_count}pre{str(pboxes)}\n')
+    f.write(f'boxes{str(boxes)}\n')
+    f.write(f'mat{str(mat)}\n')
+    mat=removedup(mat)
+    f.write(f'new mat{str(mat)}\n')
+    
+     
+    #     speedkm = speedms * 3.6
+       
+    #     if(ppy<y):
+    #        speedkm=-speedkm
+      
+    #     new.append((x,y,px,py,w,h,speedkm))
+    #     text=f'\nframe {str(frame_count)} x {x},y {y},w {w},h {h},ppx {ppx},ppy {ppy},d {d}, diff {diff},dreal {dreal},speedms {speedms},speedkm {speedkm}'
+    #     print(text)
+    #     f.write(text)
+       
+    
+    
+    return mat
+
+def find_dist_matrixold(pboxes,boxes,hsize,diff,f,frame_count,minh):
+    mat=[]
+    print(diff)
     # print(pboxes,boxes)
     ppx=0
     ppy=0
@@ -227,6 +356,8 @@ def find_dist_matrix(pboxes,boxes,hsize,diff,f,frame_count):
         return mat
     for box in boxes:
         c,x,y,w,h=box
+        if h<minh:
+            continue
         d=100
         ppy=0
         for pbox in pboxes:
@@ -238,19 +369,27 @@ def find_dist_matrix(pboxes,boxes,hsize,diff,f,frame_count):
         if c==5:
             hsize=1.5*hsize
         if c==7:
-            hsize=2*hsize     
+            hsize=2*hsize 
+
+          
         dreal=d/(h/hsize)
         speedms=dreal/diff
         
      
         speedkm = speedms * 3.6
-        if speedkm>150:
-            continue
+       
         if(ppy<y):
-            speedkm=-speedkm
-        text=f'\nframe {str(frame_count)} x {x},y {y},w {w},h {h},ppx {ppx},ppy {ppy},d {d}, diff {diff},dreal {dreal},speedms {speedms},speedkm {speedkm}'
-        f.write(text)
+           speedkm=-speedkm
+        #    err+=1
+       
+       
+        # if abs(speedkm)>10 and abs(speedkm) <150:
         mat.append((x,y,w,h,speedkm))
+      
+        text=f'\nframe {str(frame_count)} x {x},y {y},w {w},h {h},ppx {ppx},ppy {ppy},d {d}, diff {diff},dreal {dreal},speedms {speedms},speedkm {speedkm}'
+        print(text)
+        f.write(text)
+        
     # print(mat)
 
     return mat
