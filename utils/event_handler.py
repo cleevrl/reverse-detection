@@ -43,7 +43,7 @@ class EventHandler(QThread):
 
             # frame num is not changing...
             # last 2 mins -> reverse app quit
-            if not len(list_data) == 12 or self.pre_frame == list_data[4]:
+            if not len(list_data) == 14 or self.pre_frame == list_data[4]:
                 self.halt_cnt = self.halt_cnt + 1
                 if self.halt_cnt == 20 * 120:
                     print("***** Quit App due to no response!!!! *****")
