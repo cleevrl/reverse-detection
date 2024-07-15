@@ -37,13 +37,15 @@ class EventHandler(QThread):
             list_data = str_data.split(" ")
 
             if self.config.yaml_data['rev_direction']:
-                vel_index = 7
+                vel_index = 8
             else:
-                vel_index = 9
+                vel_index = 10
 
+            # frame num is not changing...
+            # last 2 mins -> reverse app quit
             if not len(list_data) == 12 or self.pre_frame == list_data[4]:
                 self.halt_cnt = self.halt_cnt + 1
-                if self.halt_cnt == 20 * 600:
+                if self.halt_cnt == 20 * 120:
                     print("***** Quit App due to no response!!!! *****")
                     self.sig_quit.emit()
                 time.sleep(0.05)
